@@ -33,14 +33,16 @@ handler.setFormatter(formatter)
 
 def send_message(bot, message):
     """Отправляет сообщение в Telegram чат. Принимает на вход два параметра:
-    экземпляр класса Bot и строку с текстом сообщения."""
+    экземпляр класса Bot и строку с текстом сообщения.
+    """
     bot.send_message(TELEGRAM_CHAT_ID, message)
 
 
 def get_api_answer(current_timestamp):
     """Делает запрос к эндпоинту API-сервиса. В случае успешного запроса
     возвращает ответ API, преобразовав его из формата JSON к типам данных
-    Python, иначе возвращает None."""
+    Python, иначе возвращает None.
+    """
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
 
@@ -60,7 +62,8 @@ def check_response(response):
     """Проверяет ответ API на корректность. Функция получает ответ API,
     приведенный к типам данных Python. Если ответ API соответствует ожиданиям,
     то функция возвращает список домашних работ (он может быть и пустым),
-    доступный в ответе API по ключу 'homeworks'."""
+    доступный в ответе API по ключу 'homeworks'.
+    """
     if not isinstance(response, dict):
         raise TypeError('Ответ от сервера не является словарем.')
 
@@ -82,8 +85,8 @@ def check_response(response):
 def parse_status(homework):
     """Извлекает из информации о конкретной домашней работе статус этой
     работы. В случае успеха, функция возвращает подготовленную для отправки
-    в Telegram строку, содержащую один из вердиктов словаря
-    HOMEWORK_STATUSES."""
+    в Telegram строку, содержащую один из вердиктов словаря HOMEWORK_STATUSES.
+    """
     if not 'homework_name' in homework:
         raise KeyError('В словаре нет ключа "homework_name"')
     homework_name = homework.get('homework_name')
@@ -102,7 +105,8 @@ def parse_status(homework):
 def check_tokens():
     """Проверяет доступность переменных окружения, которые необходимы
     для работы программы. Если отсутствует хотя бы одна переменная окружения
-    функция должна вернуть False, иначе — True."""
+    функция должна вернуть False, иначе — True.
+    """
     if (PRACTICUM_TOKEN or TELEGRAM_TOKEN or TELEGRAM_CHAT_ID) is None:
         return False
     return True
