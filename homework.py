@@ -32,7 +32,8 @@ handler.setFormatter(formatter)
 
 
 def send_message(bot, message):
-    """Отправляет сообщение в Telegram чат. 
+    """
+    Отправляет сообщение в Telegram чат. 
     Принимает на вход два параметра: экземпляр класса Bot и строку с текстом
     сообщения.
     """
@@ -70,7 +71,7 @@ def check_response(response):
         raise TypeError('Ответ от сервера не является словарем.')
 
     key = 'homeworks'
-    if not key in response:
+    if key not in response:
         raise KeyError(f'В словаре нет ключа {key}')
 
     if not isinstance(response[key], list):
@@ -89,15 +90,15 @@ def parse_status(homework):
     В случае успеха, функция возвращает подготовленную для отправки
     в Telegram строку, содержащую один из вердиктов словаря HOMEWORK_STATUSES.
     """
-    if not 'homework_name' in homework:
+    if 'homework_name' not in homework:
         raise KeyError('В словаре нет ключа "homework_name"')
     homework_name = homework.get('homework_name')
 
-    if not 'status' in homework:
+    if 'status' not in homework:
         raise KeyError('В словаре нет ключа "status"')
     homework_status = homework.get('status')
 
-    if not homework_status in HOMEWORK_STATUSES:
+    if homework_status not in HOMEWORK_STATUSES:
         raise KeyError(f'В словаре нет ключа {homework_status}')
     verdict = HOMEWORK_STATUSES[homework_status]
 
