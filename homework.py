@@ -89,8 +89,8 @@ def check_response(response):
         raise KeyError(f'В словаре нет ключа {key}')
 
     if not isinstance(response[key], list):
-        logger.error(f'В ключе {key}, данные приходят не в словаре.')
-        raise TypeError(f'В ключе {key}, данные приходят не в словаре.')
+        logger.error(f'В ключе {key}, данные приходят не в списка.')
+        raise TypeError(f'В ключе {key}, данные приходят не в списка.')
 
     try:
         response = response[key]
