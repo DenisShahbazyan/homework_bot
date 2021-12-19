@@ -67,7 +67,7 @@ def get_api_answer(current_timestamp):
     try:
         homework_statuses = homework_statuses.json()
     except Exception as error:
-        logger.error(f'Ошибка при запросе к основному эндпоинту: {error}')
+        logger.error(f'Ошибка форматирования в json(): {error}')
     else:
         return homework_statuses
 
