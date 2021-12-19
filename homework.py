@@ -161,6 +161,8 @@ def main():
             if status != old_status:
                 send_message(bot, status)
                 old_status = status
+            else:
+                logger.debug('Новых статусов нет!')
 
             current_timestamp = get_timestamp(answer[0]['date_updated'])
             time.sleep(RETRY_TIME)
