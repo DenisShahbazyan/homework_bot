@@ -38,6 +38,7 @@ def send_message(bot, message):
     сообщения.
     """
     bot.send_message(TELEGRAM_CHAT_ID, message)
+    logger.info('Сообщение успешно отправлено в Telegram.')
 
 
 def get_api_answer(current_timestamp):
@@ -50,6 +51,7 @@ def get_api_answer(current_timestamp):
 
     homework_statuses = requests.get(ENDPOINT, headers=HEADERS, params=params)
     if homework_statuses.status_code != HTTPStatus.OK:
+        logger.error('Ошибка, статус ответа от сервера != 200')
         raise Exception
 
     try:
@@ -68,13 +70,16 @@ def check_response(response):
     'homeworks'.
     """
     if not isinstance(response, dict):
+        logger.error('Ответ от сервера не является словарем.')
         raise TypeError('Ответ от сервера не является словарем.')
 
     key = 'homeworks'
     if key not in response:
+        logger.error(f'В словаре нет ключа {key}')
         raise KeyError(f'В словаре нет ключа {key}')
 
     if not isinstance(response[key], list):
+        logger.error(f'В ключе {key}, данные приходят не в словаре.')
         raise TypeError(f'В ключе {key}, данные приходят не в словаре.')
 
     try:
@@ -91,14 +96,17 @@ def parse_status(homework):
     в Telegram строку, содержащую один из вердиктов словаря HOMEWORK_STATUSES.
     """
     if 'homework_name' not in homework:
+        logger.error('В словаре нет ключа "homework_name"')
         raise KeyError('В словаре нет ключа "homework_name"')
     homework_name = homework.get('homework_name')
 
     if 'status' not in homework:
+        logger.error('В словаре нет ключа "status"')
         raise KeyError('В словаре нет ключа "status"')
     homework_status = homework.get('status')
 
     if homework_status not in HOMEWORK_STATUSES:
+        logger.error(f'В словаре нет ключа {homework_status}')
         raise KeyError(f'В словаре нет ключа {homework_status}')
     verdict = HOMEWORK_STATUSES[homework_status]
 
@@ -121,7 +129,7 @@ def main():
         logger.critical('Проверь переменные окружения')
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = int(time.time()) - 60 * 60 * 24 * 30
+    current_timestamp = int(time.time())
 
     while True:
         try:
@@ -129,9 +137,8 @@ def main():
             answer = check_response(response)
             status = parse_status(answer[0])
             send_message(bot, status)
-            print('Отправил!')
 
-            current_timestamp = int(time.time()) - 60 * 60 * 24 * 30
+            current_timestamp = int(time.time())
             time.sleep(RETRY_TIME)
 
         except Exception as error:
