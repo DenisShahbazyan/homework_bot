@@ -132,6 +132,9 @@ def check_tokens():
 
 
 def get_timestamp(time_str):
+    """Функция получает время последней проверки домашней работы.
+    Отдает результат в форамате timestamp.
+    """
     tm = dt.datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%SZ").timetuple()
     tm = int(time.mktime(tm))
     return tm
