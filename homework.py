@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+import datetime as dt
 from http import HTTPStatus
 
 import requests
@@ -37,8 +38,11 @@ def send_message(bot, message):
     Принимает на вход два параметра: экземпляр класса Bot и строку с текстом
     сообщения.
     """
-    bot.send_message(TELEGRAM_CHAT_ID, message)
-    logger.info('Сообщение успешно отправлено в Telegram.')
+    try:
+        bot.send_message(TELEGRAM_CHAT_ID, message)
+        logger.info('Сообщение успешно отправлено в Telegram.')
+    except Exception as error:
+        logger.error(f'Ошибка при отправке сообщения в Telegram {error}')
 
 
 def get_api_answer(current_timestamp):
@@ -49,7 +53,13 @@ def get_api_answer(current_timestamp):
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
 
-    homework_statuses = requests.get(ENDPOINT, headers=HEADERS, params=params)
+    try:
+        homework_statuses = requests.get(
+            ENDPOINT, headers=HEADERS, params=params)
+    except Exception as error:
+        logger.error(f'Ошибка запроса к API {error}')
+        raise Exception
+
     if homework_statuses.status_code != HTTPStatus.OK:
         logger.error('Ошибка, статус ответа от сервера != 200')
         raise Exception
@@ -83,7 +93,7 @@ def check_response(response):
         raise TypeError(f'В ключе {key}, данные приходят не в словаре.')
 
     try:
-        response = response.get(key)
+        response = response[key]
     except Exception as error:
         logger.error(f'Ошибка: {error}')
     else:
@@ -118,32 +128,46 @@ def check_tokens():
     Которые необходимы для работы программы. Если отсутствует хотя бы одна
     переменная окружения функция должна вернуть False, иначе — True.
     """
-    if (PRACTICUM_TOKEN or TELEGRAM_TOKEN or TELEGRAM_CHAT_ID) is None:
-        return False
-    return True
+    return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
+
+
+def get_timestamp(time_str):
+    tm = dt.datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%SZ").timetuple()
+    tm = int(time.mktime(tm))
+    return tm
 
 
 def main():
     """Основная логика работы бота."""
     if not check_tokens():
         logger.critical('Проверь переменные окружения')
+        exit()
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = int(time.time())
+    current_timestamp = int(time.time()) - 60 * 60 * 24 * 30
+
+    old_status = ''
+    old_message = ''
 
     while True:
         try:
             response = get_api_answer(current_timestamp)
             answer = check_response(response)
             status = parse_status(answer[0])
-            send_message(bot, status)
 
-            current_timestamp = int(time.time())
+            if status != old_status:
+                send_message(bot, status)
+                old_status = status
+
+            current_timestamp = get_timestamp(answer[0]['date_updated'])
             time.sleep(RETRY_TIME)
 
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             logger.error(message)
+            if message != old_message:
+                send_message(bot, message)
+                old_message = message
             time.sleep(RETRY_TIME)
 
 
