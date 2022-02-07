@@ -151,3 +151,4 @@ posts/static/
 media/
 
 ___test.py
+*.http
